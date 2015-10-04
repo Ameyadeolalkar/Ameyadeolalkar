@@ -4,18 +4,18 @@ var mongoose = require('mongoose'),
     passportLocalMongoose = require('passport-local-mongoose');
 
 var User   = new Schema({
-	Firstname: String,
-	Lastname: String,
-	email: { type: String, required: true, index: { unique: true }},
+	firstname: String,
+	lastname: String,
+	username: { type: String, required: true, index: { unique: true }},
 	password: { type: String, required: true, select: false },
 	type: String,
-	phoneNumber: String,
-	Reservation: [{
-		Reservation_ID: String,
-		ReservationSlot: String,
-		TableNumber: Number,
-		NumberOfGuests: Number,
-		ReservationDate: String,
+	phonenumber: String,
+	reservation: [{
+		reservation_ID: String,
+		reservationSlot: String,
+		tablenumber: Number,
+		numberofguests: Number,
+		reservationdate: String,
 	}]
 });
 
