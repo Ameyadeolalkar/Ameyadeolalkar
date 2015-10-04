@@ -2,8 +2,8 @@ var myApp = angular.module('myApp', ['ngRoute']);
 
 myApp.config(function ($routeProvider) {
   $routeProvider
-    .when('/', {templateUrl: 'partials/home.html'})
-    .when('/login', {
+    .when('/home', {templateUrl: 'partials/home.html'})
+    .when('/', {
       templateUrl: 'partials/login.html',
       controller: 'loginController',
       access: {restricted: false}
