@@ -8,7 +8,7 @@ var User   = new Schema({
 	lastname: String,
 	username: { type: String, required: true, index: { unique: true }},
 	password: { type: String, required: true, select: false },
-	type: String,
+	//type: String,
 	phonenumber: String,
 	reservation: [{
 		reservation_ID: String,

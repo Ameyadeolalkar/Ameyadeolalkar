@@ -9,7 +9,9 @@ var express = require('express'),
     path = require('path'),
     passport = require('passport'),
     localStrategy = require('passport-local' ).Strategy;
+   
 
+    
 // mongoose
 mongoose.connect('mongodb://localhost:27017/RestaurantReservation');
 
@@ -41,6 +43,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 passport.use(new localStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
+
+passport.use('local-register', new LocalStrategy({
+        // by default, local strategy uses username and password, we will override with email
+        usernameField : 'username',
+        passwordField : 'password',
+        passReqToCallback : true // allows us to pass back the entire request to the callback
+    },
 
 // routes
 app.use('/user/', routes);

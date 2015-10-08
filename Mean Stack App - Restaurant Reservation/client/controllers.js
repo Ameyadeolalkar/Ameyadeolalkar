@@ -61,7 +61,7 @@ angular.module('myApp').controller('registerController',
       $scope.disabled = true;
 
       // call register from service
-      AuthService.register($scope.registerForm.username, $scope.registerForm.password)
+      AuthService.register($scope.registerForm.username, $scope.registerForm.password, $scope.registerForm.firstname, $scope.registerForm.lastname, $scope.registerForm.phonenumber)
         // handle success
         .then(function () {
           $location.path('/login');
