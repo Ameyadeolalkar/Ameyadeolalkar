@@ -472,7 +472,7 @@ Practical Design Patterns in JavaScript*/
   simplified interface. eg. is jquery that gives a simple interface to deal with the DOM. Facade pattern also wraps the
   original constructor, but it does not change the functionality like the decorator pattern but just provides an interface */
 
-  var Task = function(data){
+ /* var Task = function(data){
   	this.name = data.name;
   	this.completed = data.completed;
   	this.priority = data.priority;
@@ -482,8 +482,20 @@ Practical Design Patterns in JavaScript*/
   
   var taskService = function(){
   	return{
-  		complete: function(){/*some activity*/}
-  		notify: function(){/*some activity*/}
+  		complete: function(task){
+        task.completed = true;
+        console.log('completing task:' + task.name);
+      },
+      setCompleteDate: function(task){
+        task.completedDate = new Date();
+        console.log(task.name + 'completed on: ' + task.completedDate);
+      },
+  		notifyCompletion: function(task, user){
+        console.log('Notifying ' + user + 'of the completion of ' + task.name);
+      },
+      save: function(task){
+        console.log('saving task' + task.name);
+      }
   	}
   }();
 
@@ -492,22 +504,22 @@ Practical Design Patterns in JavaScript*/
   	complete:true
   })
 
-  taskService.complete(mytask);
+  taskService.complete(mytask);*/
   /*some additional complex code*/
-  if(mytask.complete == true){
+  /*if(mytask.complete == true){
   	taskService.complete(...);
   	taskService.notify(...);
-  }
+  }*/
   /*The code structure is complex and not clean with one off function calls for each function	defined	in the taskService.
   this will create	difficulty while calling the api because every function will be called separately. instead of this,
   the complete additional code can be included in a wrapper*/
 
 
-  var taskServiceWrapper = function(){
+  /*var taskServiceWrapper = function(){
   		var completeAndNotify = function(task){ //wrapper that will use the complete and notify functions
-		    taskService.complete(mytask);
+		    taskService.complete(mytask);*/
 	  		/*some additional complex code*/
-	  		if(mytask.complete == true){
+	  		/*if(mytask.complete == true){
 	  			taskService.complete(...);
 	  			taskService.notify(...);
 	  		}
@@ -515,12 +527,361 @@ Practical Design Patterns in JavaScript*/
  		return	{
  			completeAndNotify:completeAndNotify	
  		}
-  }(); /*executes the function so that taskServiceWrapper is just an object that returns completeAndNotify. normally, this
+  }(); *//*executes the function so that taskServiceWrapper is just an object that returns completeAndNotify. normally, this
 		will sit in a separate file and module.exports will return the executed function*/
 
-  taskServiceWrapper.complete(mytask);
+  /*var mytask = new Task({
+    //properties
+    complete:false
+  })
+
+  taskServiceWrapper.completeAndNotify(mytask);*/
 
   /*Angular:
 
   the same pattern can be used on the angular side to wrap complex code in services. create a new service which passes in
   the original service and wraps it. this way, the controller can just call the function that the wrapper service returns*/
+
+  /*2c. Flyweight pattern
+
+  This design pattern helps to reuse portions of an object to conserve memory
+
+  The pattern is especially useful when there are complicated operations and a lot of instances of the object that are
+  being fed to the complicated operations. the flyweight pattern creates a type of buffer that collects the properties
+  set when different instances of the object are created. if there are multiple instances of the same task that are
+  created, the flyweight does not set the same properties again but instead returns the cached properties thereby saving
+  memory by not storing the same properties again
+
+  Eg. 
+
+  Consider the object Task below
+
+  var Task = function(data){
+      this.name = data.name;
+      this.priority = data.priority;
+      this.project = data.project;
+      this.user = data.user;
+      this.completed = data.completed;
+    }
+
+  /*Out of the above mentioned properties, data.name is the only property which will be unique to every instance of the
+  object. the other properties will thereby repeat a few or many times. if we save the repeating properties, we are 
+  wasting memory. A flyweight, as mentioned above helps to solve this problem. here is an example of how a flyweight can
+  be implemented. there will now be a new objec called Flyweight with these repeating properties. the repeating properties
+  can now be removed from the Task object to contain only the unique property i.e the name*/
+
+  /*var Task = function(data){
+      this.name = data.name;
+    }
+
+  var Flyweight = funtion(data){
+      this.priority = data.priority;
+      this.project = data.project;
+      this.user = data.user;
+      this.completed = data.completed;
+  }*/
+
+  /*The below created FlyWeightFactory will check if the combination of common properties exists. if not, it will save
+  the common properties in a flyweight constructor. at the end, the factory will return the constructor. the get method
+  has been declared for this purpose. 
+
+  var FlyWeightFactory(){
+    var flyweights = {};
+    
+    var get = function(priority,project,user,completed){
+      if !flyweights[priority + project + user + completed]{
+        flyweight[priority + project + user + completed] = new Flyweight(priority,project,user,completed)
+      }
+      return flyweights[priority + project + user + completed];
+    }
+  }()
+
+  the get method can be called from the FlyWeightFactory from within the Task
+  object
+
+  var Task = function(data){
+      this.flyweight = FlyWeightFactory.get(data.priority,data.project,data.user,data.completed);
+      this.name = data.name;
+    }
+
+  with prototypes it would be
+
+  Task.prototype.getPriority = function(){
+    this.flyweight.priority;
+  }
+/*
+
+/*3. Behavioral Design Patterns
+
+These design patterns are concerned with the assignment of responsibilities between objects and how they communicate. they
+break out of a single object mentality and establish communication between different objects. eg. there can be an object
+of record and several object refer to that object*/
+
+/*3a. Observer pattern
+
+There will be one object that has record and other objects watch for changes to that object/*
+
+/*Eg. Say we have the following object task
+
+var Task = function (data) {
+    this.name = data.name;
+    this.priority = data.priority;
+    this.project = data.project;
+    this.user = data.user;
+    this.completed = data.completed;
+}
+
+Task.prototype.complete = function () {
+    console.log('completing task: ' + this.name);
+    this.completed = true;
+};
+
+Task.prototype.save = function () {
+    console.log('saving Task: ' + this.name);
+};
+
+module.exports = Task;
+
+
+Then we define our observers
+
+var Task = require('./task'); //require the exported Task
+
+var notificationService = function () {
+    var message = 'Notifying ';
+    this.update = function (task) {
+        console.log(message + task.user + ' for task ' + task.name); //will write to the console when the task changes
+    }
+};
+var loggingService = function () {
+    var message = 'Logging '
+    this.update = function (task) {
+        console.log(message + task.user + ' for task ' + task.name); //will write to the console when the task changes
+    }
+}
+var auditingService = function () {
+    var message = 'Auditing '
+    this.update = function (task) {
+        console.log(message + task.user + ' for task ' + task.name); //will write to the console when the task changes
+    }
+}
+
+function ObserverList() {                 //the task is the subject and it will have the observer list. the task will... 
+    this.observerList = [];               //...notify all observers in the list
+};
+
+ObserverList.prototype.add = function (obj) {
+    return this.observerList.push(obj);         //observers are registering themselves
+};
+
+ObserverList.prototype.get = function (index) {
+    if (index > -1 && index < this.observerList.length) {
+        return this.observerList[index];
+    }
+};
+
+ObserverList.prototype.count = function () {
+    return this.observerList.length;
+};
+
+ObserverList.prototype.removeAt = function (index) { //removes observer at the spot
+    this.observerList.splice(index, 1); //removes one item at that index which is found using the indexOf function
+};
+
+ObserverList.prototype.indexOf = function (obj, startIndex) {
+    var i = startIndex;
+
+    while (i < this.observerList.length) {
+        if (this.observerList[i] === obj) {
+            return i;
+        }
+        i++;
+    }
+
+    return -1;
+} 
+var ObservableTask = function (data) {   //Task is the subject and will have the list of observers. the object is being...
+                                         //...created here to not disturb the already built out Task object 
+    Task.call(this, data);              //using the decorator pattern to add properties of Task to ObservableTask
+    this.observers = new ObserverList();  //Adding the observerList to the observableTask
+};
+
+ObservableTask.prototype.addObserver = function (observer) { //method of the ObservableTask object
+    this.observers.add(observer);
+};
+
+ObservableTask.prototype.removeObserver = function (observer) {    //method of the ObservableTask object
+    this.observers.removeAt( this.observers.indexOf( observer, 0 ) );
+};
+
+ObservableTask.prototype.notify = function (context) { //Task is the subject and will have the notify method. the object is being...
+                                                        //...created here to not disturb the already built out Task object...
+                                                        //...here, context and this both refer to the ObservableTask object...
+                                                        //...this.observers refers to the observerList() object
+    var observerCount = this.observers.count(); //counts the length of the observer list
+    for (var i = 0; i < observerCount; i++) {   //for every observer, get whatever is passed
+        this.observers.get(i)(context);
+    }
+}
+
+ObservableTask.prototype.save = function () { 
+    this.notify(this); //where this is the observable task
+    Task.prototype.save.call(this); //overwrite the save method in task
+};
+
+var task1 = new ObservableTask({
+    name: 'create a demo for constructors',
+    user: 'Jon'
+});
+
+var not = new notificationService();
+var ls = new loggingService();
+var audit = new auditingService();
+
+task1.addObserver(not.update);
+task1.addObserver(ls.update);
+task1.addObserver(audit.update);
+
+task1.save();
+
+task1.removeObserver(audit);
+task1.save();
+
+
+3b. One object manages all of the communication. Mediator pattern allows for a loosely coupled system
+
+/*Eg. Say we have the following object task
+
+var Task = function (data) {
+    this.name = data.name;
+    this.priority = data.priority;
+    this.project = data.project;
+    this.user = data.user;
+    this.completed = data.completed;
+}
+
+Task.prototype.complete = function () {
+    console.log('completing task: ' + this.name);
+    this.completed = true;
+};
+
+Task.prototype.save = function () {
+    console.log('saving Task: ' + this.name);
+};
+
+module.exports = Task;
+
+
+Here is the services and additional objects along with the mediator
+
+
+var Task = require('./task');
+
+var notificationService = function () {
+    var message = 'Notifying ';
+    this.update = function (task) {
+        console.log(message + task.user + ' for task ' + task.name);
+    }
+};
+var loggingService = function () {
+    var message = 'Logging '
+    this.update = function (task) {
+        console.log(message + task.user + ' for task ' + task.name);
+    }
+}
+var auditingService = function () {
+    var message = 'Auditing '
+    this.update = function (task) {
+        console.log(message + task.user + ' for task ' + task.name);
+    }
+};
+
+var mediator = (function(){ //this is where the mediator is defined
+    var channels = {};
+    
+    var subscribe = function(channel, context, func){
+        if (!mediator.channels[channel]) {
+            mediator.channels[channel] = []
+        }
+        mediator.channels[channel].push({
+            context: context,
+            func: func
+        });
+    };
+    
+    var publish = function(channel){
+        if (!this.channels[channel]) {
+            return false
+        }
+        
+        var args = Array.prototype.slice.call(arguments, 1);
+        
+        for(var i = 0; i < mediator.channels[channel].length; i++)
+        {
+            var sub = mediator.channels[channel][i];
+            sub.func.apply(sub.context, args) //the reason apply is used here is because we are passing the context 
+        }
+    }
+    return{
+        channels: {},
+        subscribe:subscribe,
+        publish:publish
+    };
+}());
+
+var task1 = new Task({
+    name: 'create a demo for mediators',
+    user: 'Jon'
+});
+
+var not = new notificationService();
+var ls = new loggingService();
+var audit = new auditingService();
+
+mediator.subscribe('complete', not, not.update);
+mediator.subscribe('complete', ls, ls.update);
+mediator.subscribe('complete', audit, audit.update);
+
+task1.complete = function(){
+    mediator.publish('complete', this);
+    Task.prototype.complete.call(this);
+}
+task1.complete();
+
+
+3c. Command Pattern
+
+Fully decouples execution from the implementation. Allows for a less fragile implementation and makes it easy to make 
+changes. Supports undo of operations. supports auditing and logging operations
+
+Eg.
+
+Consider the code below
+
+var repo = { //same repo fobject from module 3
+    select: function (id) {
+        console.log('Getting task ' + id);
+        return {
+            name: 'new task from db'
+        }
+    },
+    save: function (task) {
+        console.log('Saving ' + task.name + ' to the db');
+    }
+
+}
+
+repo.execute = function(name){
+    var args = Array.prototype.slice.call(arguments, 1); //have to list each parameter separately
+    
+    if(repo[name]){
+        return repo[name].apply(repo, args) //apply allows to pass an array of parameters
+    }
+    if(name==='get'){
+        return repo['select'].apply(repo, args)
+    }
+    return false;
+};
+
+var task = repo.execute('get', 1);
+console.log(task);
