@@ -1,4 +1,7 @@
-var repo = {
+var repo = { //same repo fobject from module 3
+    tasks: {},
+    commands: [],
+
     select: function (id) {
         console.log('Getting task ' + id);
         return {
@@ -6,22 +9,70 @@ var repo = {
         }
     },
     save: function (task) {
+        repo.tasks[task.id] = task;
         console.log('Saving ' + task.name + ' to the db');
+    },
+    replay: function(){
+      for(var i=0; i<repo.commands.length; i++){
+        var command = repo.commands[i];
+
+        repo.executeNoLog(command.name, command.obj)
+      }
     }
 
 }
 
-repo.execute = function(name){
-    var args = Array.prototype.slice.call(arguments, 1);
+repo.executeNoLog = function(name){
+    var args = Array.prototype.slice.call(arguments, 1); //have to list each parameter separately
     
     if(repo[name]){
-        return repo[name].apply(repo, args)
+        return repo[name].apply(repo, args) //apply allows to pass an array of parameters
     }
-    if(name==='get'){
-        return repo['select'].apply(repo, args)
+};
+
+repo.execute = function(name){
+   
+    var args = Array.prototype.slice.call(arguments, 1); //have to list each parameter separately
+    //console.log(args)
+    repo.commands.push({
+      name: name,
+      obj: args[0]
+    })
+    
+    if(repo[name]){
+        return repo[name].apply(repo, args) //apply allows to pass an array of parameters
     }
     return false;
 };
 
-var task = repo.execute('get', 1);
-console.log(task);
+repo.execute('save',{
+  id:1,
+  name:'Task 1',
+  completed: false
+});
+repo.execute('save',{
+  id:2,
+  name:'Task 2',
+  completed: false
+});
+repo.execute('save',{
+  id:3,
+  name:'Task 3',
+  completed: false
+});
+repo.execute('save',{
+  id:4,
+  name:'Task 4',
+  completed: false
+});
+repo.execute('save',{
+  id:5,
+  name:'Task 5',
+  completed: false
+});
+
+console.log(repo.tasks)
+repo.tasks = {};
+console.log(repo.tasks);
+repo.replay();
+console.log(repo.tasks);

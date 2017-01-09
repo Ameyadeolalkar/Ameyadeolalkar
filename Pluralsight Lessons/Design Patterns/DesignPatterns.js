@@ -859,29 +859,81 @@ Eg.
 Consider the code below
 
 var repo = { //same repo fobject from module 3
+    tasks = {},
+    commands = [],
+
     select: function (id) {
         console.log('Getting task ' + id);
         return {
             name: 'new task from db'
         }
     },
-    save: function (task) {
+    save: function (task) {              
+        repo.tasks[task.id] = task;
         console.log('Saving ' + task.name + ' to the db');
+    },
+    replay: function(){
+      for(var i=0; i<repo.commands.length; i++){
+        var command = repo.commands[i];
+
+        repo.executeNoLog(command.name, command.obj)
+      }
     }
 
 }
 
+repo.executeNoLog = function(name){
+    var args = Array.prototype.slice.call(arguments, 1); //have to list each parameter separately. arguments looks something
+                                                        //like this. {0:'save',1:{id:1,name:'Task 1',completed:false}}
+    
+    if(repo[name]){
+        return repo[name].apply(repo, args) //apply allows to pass an array of parameters. in this case 
+                                            //{id:1,name:'Task 1',completed:false} will be passed as an argument to repo.save 
+    }
+};
+
 repo.execute = function(name){
     var args = Array.prototype.slice.call(arguments, 1); //have to list each parameter separately
     
+    repo.commands.push({
+      name: name,
+      obj: args[0]
+    })
     if(repo[name]){
-        return repo[name].apply(repo, args) //apply allows to pass an array of parameters
-    }
-    if(name==='get'){
-        return repo['select'].apply(repo, args)
+        return repo[name].apply(repo, args) //apply allows to pass an array of parameters to the repo with function as
+                                            //specified in name, in this case it is save
     }
     return false;
 };
 
-var task = repo.execute('get', 1);
-console.log(task);
+repo.execute('save',{
+  id:1,
+  name:'Task 1',
+  completed: false
+});
+repo.execute('save',{
+  id:2,
+  name:'Task 2',
+  completed: false
+});
+repo.execute('save',{
+  id:3,
+  name:'Task 3',
+  completed: false
+});
+repo.execute('save',{
+  id:4,
+  name:'Task 4',
+  completed: false
+});
+repo.execute('save',{
+  id:5,
+  name:'Task 5',
+  completed: false
+});
+
+console.log(repo.tasks)
+repo.tasks = {};
+console.log(repo.tasks);
+repo.replay();
+console.log(repo.tasks);
